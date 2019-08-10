@@ -3,13 +3,24 @@ const blogRouter = express.Router();
 
 const Blog = require('../models/blog');
 
-blogRouter.get('/', (request, response, next) => {
-    Blog
-        .find({})
-        .then(blogs => {
-            response.json(blogs.map((b) => b.toJSON()));
-        })
-        .catch((e) => next(e));
+blogRouter.get('/', async (request, response, next) => {
+    try {
+        response.json((await Blog.find({})).map(b => b.toJSON()));
+    } catch (e) {
+        next(e);
+    }
+});
+
+blogRouter.get('/:id', async (request, response, next) => {
+    try {
+        const individualBlog = await Blog.findById(request.params.id);
+        if (individualBlog) {
+            return response.json(individualBlog.toJSON());
+        }
+        response.status(404).json({error: `Entry with ID ${request.params.id} wasn't found`});
+    } catch (e) {
+        next(e);
+    }
 });
 
 blogRouter.post('/', async (request, response, next) => {
@@ -21,5 +32,30 @@ blogRouter.post('/', async (request, response, next) => {
         next(e);
     }
 });
+
+blogRouter.put('/:id', async (request, response, next) => {
+    try {
+        const updatedItem = (await Blog.findByIdAndUpdate(request.params.id, request.body, { new: true }));
+        if (updatedItem) {
+            return response.json(updatedItem.toJSON());
+        }
+        response.status(404).json({error: `Entry with ID ${request.params.id} wasn't found`});
+    } catch (e) {
+        next(e);
+    }
+});
+
+blogRouter.delete('/:id', async (request, response, next) => {
+    try {
+        const result = await Blog.findByIdAndRemove(request.params.id);
+        if (result) {
+            return response.status(204).end();
+        }
+        response.status(404).json({error: `Entry with ID ${request.params.id} wasn't found`});
+    } catch (e) {
+        next(e);
+    }
+});
+
 
 module.exports = blogRouter;

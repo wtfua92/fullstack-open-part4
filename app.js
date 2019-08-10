@@ -10,7 +10,7 @@ const logger = require('./utils/logger');
 
 const app = express();
 
-mongoose.connect(MONGO_URI, { useCreateIndex: true, useNewUrlParser: true })
+mongoose.connect(MONGO_URI, { useCreateIndex: true, useNewUrlParser: true, useFindAndModify: false })
     .then(() => {
         logger.info('DB connected');
     })

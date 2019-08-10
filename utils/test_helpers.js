@@ -5,9 +5,6 @@ const logger = require('./logger');
 const nonExistingId = async () => {
     try {
         const blogEntry = new Blog(initialBlogs[0]);
-        await blogEntry.save();
-        await blogEntry.remove();
-
         return blogEntry._id.toString();
     } catch(e) {
         logger.error(e.message);
