@@ -1,10 +1,21 @@
 const mongoose = require('mongoose');
 
 const blogSchema = new mongoose.Schema({
-    title: String,
-    author: String,
+    title: {
+        type: String,
+        required: true,
+        minlength: 3
+    },
+    author: {
+        type: String,
+        required: true,
+        minlength: 3
+    },
     url: String,
-    likes: Number
+    likes: {
+        type: Number,
+        default: 0
+    }
 });
 
 // blogSchema.plugin(unique);
