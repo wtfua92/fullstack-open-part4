@@ -11,6 +11,14 @@ userRouter.get('/', async (req, res, next) => {
 });
 
 userRouter.post('/', async (req, res, next) => {
+    if (!req.body.password) {
+        return res.status(400).json({error: 'Password is required'});
+    }
+
+    if (req.body.password && req.body.password.length < 3) {
+        return res.status(400).json({error: 'Password is required to contain at least 3 symbols'});
+    }
+
     const newUser = new User(req.body);
     try {
         const savedUser = await newUser.save();

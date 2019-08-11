@@ -34,11 +34,46 @@ describe('User Controller', () => {
 
     describe('POST', () => {
         test('should return 400 if username is not unique', async () => {
+            const usersAtStart = await usersInDB();
+
             await api
                 .post('/api/users')
                 .send(users[0])
                 .expect(400)
                 .expect('Content-Type', /application\/json/);
+
+            const usersAtEnd = await usersInDB();
+
+            expect(usersAtEnd.length).toBe(usersAtStart.length);
+        });
+
+        test('should return 400 and corresponding error if password is not provided', async () => {
+            const usersAtStart = await usersInDB();
+
+            const response = (await api
+                .post('/api/users')
+                .send({...users[0], password: ''})
+                .expect(400)
+                .expect('Content-Type', /application\/json/)).body;
+
+            const usersAtEnd = await usersInDB();
+
+            expect(usersAtEnd.length).toBe(usersAtStart.length);
+            expect(response.error).toBe('Password is required');
+        });
+
+        test('should return 400 and corresponding error if password is shorter than 3 symbols', async () => {
+            const usersAtStart = await usersInDB();
+            const response = (await api
+                .post('/api/users')
+                .send({...users[0], password: '12'})
+                .expect(400)
+                .expect('Content-Type', /application\/json/)).body;
+
+            const usersAtEnd = await usersInDB();
+
+            expect(usersAtEnd.length).toBe(usersAtStart.length);
+            expect(response.error).toBe('Password is required to contain at least 3 symbols');
         });
 
         test('should return 201 and user object after saving', async () => {
