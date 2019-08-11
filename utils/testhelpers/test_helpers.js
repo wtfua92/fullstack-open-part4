@@ -1,6 +1,6 @@
-const Blog = require('../models/blog');
+const Blog = require('../../models/blog');
 const initialBlogs = require('./list_helpers').blogsList;
-const logger = require('./logger');
+const logger = require('../logger');
 
 const nonExistingId = async () => {
     try {

@@ -5,7 +5,7 @@ const {
     mostBlogs,
     mostLikes,
     blogsList
-} = require('../utils/list_helpers');
+} = require('../utils/testhelpers/list_helpers');
 
 test('dummy returns one', () => {
     const result = dummy([]);

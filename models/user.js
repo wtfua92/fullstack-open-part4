@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const unique = require('mongoose-unique-validator');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -14,8 +15,14 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        minlength: 6
     }
+});
+
+userSchema.pre('save', { document: true }, function (next) {
+    this.password = bcrypt.hashSync(this.password, 10);
+    next();
 });
 
 userSchema.set('toJSON', {
