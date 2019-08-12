@@ -5,7 +5,7 @@ const Blog = require('../models/blog');
 
 blogRouter.get('/', async (request, response, next) => {
     try {
-        response.json((await Blog.find({})).map(b => b.toJSON()));
+        response.json((await Blog.find({}).populate('user')).map(b => b.toJSON()));
     } catch (e) {
         next(e);
     }
@@ -13,7 +13,7 @@ blogRouter.get('/', async (request, response, next) => {
 
 blogRouter.get('/:id', async (request, response, next) => {
     try {
-        const individualBlog = await Blog.findById(request.params.id);
+        const individualBlog = await Blog.findById(request.params.id).populate('user');
         if (individualBlog) {
             return response.json(individualBlog.toJSON());
         }
@@ -26,8 +26,9 @@ blogRouter.get('/:id', async (request, response, next) => {
 blogRouter.post('/', async (request, response, next) => {
     const blog = new Blog(request.body);
     try {
-        const result = (await blog.save()).toJSON();
-        response.status(201).json(result);
+        const result = await blog.save();
+        const resultWithUser = await Blog.populate(result, { path: 'user' });
+        response.status(201).json(resultWithUser.toJSON());
     } catch (e) {
         next(e);
     }

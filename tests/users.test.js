@@ -20,15 +20,17 @@ describe('User Controller', () => {
     });
 
     describe('GET', () => {
-        test('should return users', async () => {
-            const response = await api
+        test('should return users populated with blogs', async () => {
+            const response = (await api
                 .get('/api/users')
                 .expect(200)
-                .expect('Content-Type', /application\/json/);
+                .expect('Content-Type', /application\/json/)).body;
 
-            expect(response.body.length).toBe(users.length);
-            expect(response.body[0].password).toBeUndefined();
-            expect(response.body[0].id).toBeDefined();
+            const userWithBlogs = response.find((u) => u.username === 'user3');
+            expect(response.length).toBe(users.length);
+            expect(response[0].password).toBeUndefined();
+            expect(response[0].id).toBeDefined();
+            expect(userWithBlogs.blogs[0].title).toBeDefined();
         });
     });
 

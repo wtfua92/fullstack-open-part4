@@ -18,12 +18,13 @@ describe('Blogs API', () => {
     });
 
     describe('GET', () => {
-        test('GET should respond with 200, json content type and a list of blogs', async () => {
+        test('GET should respond with 200, json content type and a list of blogs populated with users', async () => {
             const response = (await api
                 .get('/api/blogs')
                 .expect(200)
                 .expect('Content-Type', /application\/json/)).body;
             expect(response.length).toBe(initialBlogs.length);
+            expect(response[0].user.username).toBeDefined();
         });
 
         test('should return individual entry', async () => {
@@ -39,6 +40,7 @@ describe('Blogs API', () => {
 
             expect(individualBlog.id).toEqual(firstBlogItem.id);
             expect(individualBlog.title).toEqual(firstBlogItem.title);
+            expect(individualBlog.user.username).toBeDefined();
         });
 
         test('should respond with 404 if id does not exist', async () => {
@@ -96,7 +98,7 @@ describe('Blogs API', () => {
             expect(blogEntry.id).toBeDefined();
         });
 
-        test('should create a new entry on POST request', async () => {
+        test('should create a new entry on POST request and return it populated', async () => {
             const newBlogEntry = initialBlogs[0];
             const response = await api
                 .post('/api/blogs')
@@ -108,6 +110,7 @@ describe('Blogs API', () => {
 
             expect(allBlogs.length).toBe(initialBlogs.length + 1);
             expect(response.body.title).toBe(newBlogEntry.title);
+            expect(response.body.user.username).toBeDefined();
         });
 
         test('should default to 0 if likes number is not provided', async () => {
