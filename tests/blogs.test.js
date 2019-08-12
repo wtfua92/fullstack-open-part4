@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const app = require('../app');
 const Blog = require('../models/blog');
 const {initialBlogs, nonExistingId, blogEntriesInDB} = require('../utils/testhelpers/test_helpers');
+const {users} = require('../utils/testhelpers/user_test_helper');
 
 const api = supertest(app);
 
@@ -100,8 +101,10 @@ describe('Blogs API', () => {
 
         test('should create a new entry on POST request and return it populated', async () => {
             const newBlogEntry = initialBlogs[0];
+            const loggedInUserToken = (await api.post('/api/login').send(users[0])).body.token;
             const response = await api
                 .post('/api/blogs')
+                .set('Authorization', `Bearer ${loggedInUserToken}`)
                 .send(newBlogEntry)
                 .expect(201)
                 .expect('Content-Type', /application\/json/);
@@ -116,8 +119,11 @@ describe('Blogs API', () => {
         test('should default to 0 if likes number is not provided', async () => {
             const newBlogEntry = initialBlogs[0];
             delete newBlogEntry.likes;
+            const loggedInUserToken = (await api.post('/api/login').send(users[0])).response;
+            console.log(loggedInUserToken);
             const response = await api
                 .post('/api/blogs')
+                .set('Authorization', `Bearer ${loggedInUserToken}`)
                 .send(newBlogEntry)
                 .expect(201)
                 .expect('Content-Type', /application\/json/);

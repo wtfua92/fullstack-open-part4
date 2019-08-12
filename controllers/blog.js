@@ -1,7 +1,9 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const blogRouter = express.Router();
 
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
 blogRouter.get('/', async (request, response, next) => {
     try {
@@ -24,11 +26,20 @@ blogRouter.get('/:id', async (request, response, next) => {
 });
 
 blogRouter.post('/', async (request, response, next) => {
+    const userToken = request.token;
     const blog = new Blog(request.body);
     try {
+        const decodedToken = jwt.verify(userToken, process.env.SECRET);
+        if (!userToken || !decodedToken.id) {
+            return response.status(401).json({error: 'only authorized users allowed to create blogs, please login'});
+        }
         const result = await blog.save();
+        const user = await User.findOne(result.user);
+        user.blogs = [...user.blogs, result._id];
+        await user.save();
+
         const resultWithUser = await Blog.populate(result, { path: 'user' });
-        response.status(201).json(resultWithUser.toJSON());
+        return response.status(201).json(resultWithUser.toJSON());
     } catch (e) {
         next(e);
     }

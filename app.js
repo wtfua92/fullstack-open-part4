@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const {MONGO_URI} = require('./utils/config');
-const {errorHandler, unknownEndpoint, requestLogger} = require('./utils/middleware');
+const {errorHandler, unknownEndpoint, requestLogger, tokenHandler} = require('./utils/middleware');
 const logger = require('./utils/logger');
 
 const blogRouter = require('./controllers/blog');
@@ -26,6 +26,7 @@ app.use(express.static('build'));
 app.use(bodyParser.json());
 app.use(requestLogger);
 
+app.use(tokenHandler);
 app.use('/api/blogs', blogRouter);
 app.use('/api/users', userRouter);
 app.use('/api/login', loginRouter);

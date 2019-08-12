@@ -18,6 +18,17 @@ describe('Login API', () => {
         expect(response.username).toBe(users[0].username);
     });
 
+    test('should return 401 if password is wrong', async () => {
+        await api
+            .post('/api/login')
+            .send({
+                username: 'lolo',
+                password: 'lololo'
+            })
+            .expect(401)
+            .expect('Content-Type', /application\/json/);
+    });
+
     afterAll(() => {
         mongoose.connection.end();
     });
