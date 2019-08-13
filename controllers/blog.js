@@ -60,12 +60,33 @@ blogRouter.put('/:id', async (request, response, next) => {
 });
 
 blogRouter.delete('/:id', async (request, response, next) => {
+    const userToken = request.token;
+    if (!userToken) {
+        return response.status(401).json({error: 'Only logged in users can delete blogs'});
+    }
+
     try {
-        const result = await Blog.findByIdAndRemove(request.params.id);
-        if (result) {
-            return response.status(204).end();
+        const decodedToken = jwt.verify(userToken, process.env.SECRET);
+        if (!decodedToken.id) {
+            return response.status(401).json({error: 'Please log in'});
         }
-        response.status(404).json({error: `Entry with ID ${request.params.id} wasn't found`});
+
+        const result = await Blog.findById(request.params.id);
+
+        if (!result) {
+            return response.status(404).json({error: 'This blog entry was not found'});
+        }
+
+        const user = await User.findById(decodedToken.id);
+
+        if (!user || user._id.toString() !== result.user.toString()) {
+            return response.status(401).json({error: 'You did not create this blog'});
+        }
+
+        await Blog.deleteOne({ _id: result._id });
+        user.blogs = user.blogs.filter(b => b.toString() !== result._id.toString());
+        await user.save();
+        return response.status(204).end();
     } catch (e) {
         next(e);
     }

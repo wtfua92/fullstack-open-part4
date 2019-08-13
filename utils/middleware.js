@@ -1,7 +1,11 @@
 const logger = require('./logger');
 
 const requestLogger = (req, res, next) => {
-    logger.info(`${req.method} | ${req.path} | ${JSON.stringify(req.body, null, 2)}`);
+    let message = `${req.method} | ${req.path}`;
+    if (req.method === 'POST' || req.method === 'PUT') {
+        message += ` | ${JSON.stringify(req.body, null, 2)}`;
+    }
+    logger.info(message);
     next();
 };
 
