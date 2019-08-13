@@ -7,7 +7,7 @@ const app = require('../app');
 const api = supertest(app);
 
 describe('Login API', () => {
-    test('should return user info and token upon successful login', async () => {
+    test('should return user info and token upon successful login', async (done) => {
         const response = (await api
             .post('/api/login')
             .send(users[0])
@@ -16,9 +16,10 @@ describe('Login API', () => {
 
         expect(response.token).toBeDefined();
         expect(response.username).toBe(users[0].username);
+        done();
     });
 
-    test('should return 401 if password is wrong', async () => {
+    test('should return 401 if password is wrong', async (done) => {
         await api
             .post('/api/login')
             .send({
@@ -27,6 +28,7 @@ describe('Login API', () => {
             })
             .expect(401)
             .expect('Content-Type', /application\/json/);
+        done();
     });
 
     afterAll(() => {

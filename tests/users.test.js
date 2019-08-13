@@ -45,7 +45,7 @@ describe('User Controller', () => {
     });
 
     describe('POST', () => {
-        test('should return 400 if username is not unique', async () => {
+        test('should return 400 if username is not unique', async (done) => {
             const usersAtStart = await usersInDB();
 
             await api
@@ -57,9 +57,10 @@ describe('User Controller', () => {
             const usersAtEnd = await usersInDB();
 
             expect(usersAtEnd.length).toBe(usersAtStart.length);
+            done();
         });
 
-        test('should return 400 and corresponding error if password is not provided', async () => {
+        test('should return 400 and corresponding error if password is not provided', async (done) => {
             const usersAtStart = await usersInDB();
 
             const response = (await api
@@ -72,9 +73,10 @@ describe('User Controller', () => {
 
             expect(usersAtEnd.length).toBe(usersAtStart.length);
             expect(response.error).toBe('Password is required');
+            done();
         });
 
-        test('should return 400 and corresponding error if password is shorter than 3 symbols', async () => {
+        test('should return 400 and corresponding error if password is shorter than 3 symbols', async (done) => {
             const usersAtStart = await usersInDB();
             const response = (await api
                 .post('/api/users')
@@ -86,9 +88,10 @@ describe('User Controller', () => {
 
             expect(usersAtEnd.length).toBe(usersAtStart.length);
             expect(response.error).toBe('Password is required to contain at least 3 symbols');
+            done();
         });
 
-        test('should return 201 and user object after saving', async () => {
+        test('should return 201 and user object after saving', async (done) => {
             const usersAtStart = await usersInDB();
             const userToBeSaved = users[0];
             userToBeSaved.username = 'user4';
@@ -103,6 +106,7 @@ describe('User Controller', () => {
 
             expect(usersAtEnd.length).toBe(usersAtStart.length + 1);
             expect(response.body.username).toBe(userToBeSaved.username);
+            done();
         });
     });
 

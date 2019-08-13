@@ -44,7 +44,7 @@ describe('Blogs API', () => {
             expect(response[0].user.username).toBeDefined();
         });
 
-        test('should return individual entry', async () => {
+        test('should return individual entry', async (done) => {
             const firstBlogItem = (await api
                 .get('/api/blogs')
                 .expect(200)
@@ -58,19 +58,21 @@ describe('Blogs API', () => {
             expect(individualBlog.id).toEqual(firstBlogItem.id);
             expect(individualBlog.title).toEqual(firstBlogItem.title);
             expect(individualBlog.user.username).toBeDefined();
+            done();
         });
 
-        test('should respond with 404 if id does not exist', async () => {
+        test('should respond with 404 if id does not exist', async (done) => {
             const nonId = await nonExistingId();
             await api
                 .get(`/api/blogs/${nonId}`)
                 .expect(404)
                 .expect('Content-Type', /application\/json/);
+            done();
         });
     });
 
     describe('DELETE', () => {
-        test('should respond with 404 if id does not exist', async () => {
+        test('should respond with 404 if id does not exist', async (done) => {
             const loggedInUserToken = (await api.post('/api/login').send(users[0])).body.token;
             const nonId = await nonExistingId();
             await api
@@ -78,27 +80,42 @@ describe('Blogs API', () => {
                 .set('Authorization', `Bearer ${loggedInUserToken}`)
                 .expect(404)
                 .expect('Content-Type', /application\/json/);
+            done();
         });
 
-        test('should delete a blog item successfully', async () => {
-            const itemToDelete = (await blogEntriesInDB())[0];
+        test('should delete a blog item successfully', async (done) => {
+            const itemToDelete = (await blogEntriesInDB())[1];
+            const loggedInUserToken = (await api.post('/api/login').send(users[1])).body.token;
             await api
                 .delete(`/api/blogs/${itemToDelete.id}`)
+                .set('Authorization', `Bearer ${loggedInUserToken}`)
                 .expect(204);
+            done();
+        });
+
+        test('should not delete a blog item if user is not the same who created it', async (done) => {
+            const itemToDelete = (await blogEntriesInDB())[1];
+            const loggedInUserToken = (await api.post('/api/login').send(users[0])).body.token;
+            await api
+                .delete(`/api/blogs/${itemToDelete.id}`)
+                .set('Authorization', `Bearer ${loggedInUserToken}`)
+                .expect(401);
+            done();
         });
     });
 
     describe('PUT', () => {
-        test('should respond with 404 if id does not exist', async () => {
+        test('should respond with 404 if id does not exist', async (done) => {
             const nonId = await nonExistingId();
             await api
                 .put(`/api/blogs/${nonId}`)
                 .send({ likes: 404 })
                 .expect(404)
                 .expect('Content-Type', /application\/json/);
+            done();
         });
 
-        test('should update a blog item successfully', async () => {
+        test('should update a blog item successfully', async (done) => {
             const itemToUpdate = (await blogEntriesInDB())[0];
             const response = await api
                 .put(`/api/blogs/${itemToUpdate.id}`)
@@ -108,6 +125,7 @@ describe('Blogs API', () => {
 
             expect(response.body.id).toBe(itemToUpdate.id);
             expect(response.body.likes).toBe(200);
+            done();
         });
     });
 
@@ -117,7 +135,7 @@ describe('Blogs API', () => {
             expect(blogEntry.id).toBeDefined();
         });
 
-        test('should create a new entry on POST request and return it populated', async () => {
+        test('should create a new entry on POST request and return it populated', async (done) => {
             const newBlogEntry = initialBlogs[0];
             const loggedInUserToken = (await api.post('/api/login').send(users[0])).body.token;
             const response = await api
@@ -132,9 +150,10 @@ describe('Blogs API', () => {
             expect(allBlogs.length).toBe(initialBlogs.length + 1);
             expect(response.body.title).toBe(newBlogEntry.title);
             expect(response.body.user.username).toBeDefined();
+            done();
         });
 
-        test('should default to 0 if likes number is not provided', async () => {
+        test('should default to 0 if likes number is not provided', async (done) => {
             const newBlogEntry = initialBlogs[0];
             delete newBlogEntry.likes;
             const loggedInUserToken = (await api.post('/api/login').send(users[1])).body.token;
@@ -146,9 +165,10 @@ describe('Blogs API', () => {
                 .expect('Content-Type', /application\/json/);
 
             expect(response.body.likes).toBe(0);
+            done();
         });
 
-        test('should respond with 400 if title or author not provided', async () => {
+        test('should respond with 400 if title or author not provided', async (done) => {
             const newBlogEntry = initialBlogs[0];
             const anotherNewBlogEntry = initialBlogs[0];
             delete newBlogEntry.title;
@@ -165,7 +185,7 @@ describe('Blogs API', () => {
                 .send(anotherNewBlogEntry)
                 .expect(400)
                 .expect('Content-Type', /application\/json/);
-
+            done();
         });
     });
 
