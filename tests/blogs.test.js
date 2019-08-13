@@ -71,9 +71,11 @@ describe('Blogs API', () => {
 
     describe('DELETE', () => {
         test('should respond with 404 if id does not exist', async () => {
+            const loggedInUserToken = (await api.post('/api/login').send(users[0])).body.token;
             const nonId = await nonExistingId();
             await api
                 .delete(`/api/blogs/${nonId}`)
+                .set('Authorization', `Bearer ${loggedInUserToken}`)
                 .expect(404)
                 .expect('Content-Type', /application\/json/);
         });
