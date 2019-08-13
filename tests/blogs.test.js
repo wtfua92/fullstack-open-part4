@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 
 const app = require('../app');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 const {initialBlogs, nonExistingId, blogEntriesInDB} = require('../utils/testhelpers/test_helpers');
 const {users} = require('../utils/testhelpers/user_test_helper');
 
@@ -11,11 +12,26 @@ const api = supertest(app);
 describe('Blogs API', () => {
     beforeEach(async () => {
         await Blog.deleteMany({});
+        await User.deleteMany({});
 
-        await Promise.all(initialBlogs.map(b => {
+        const usersToSave = users.map(u => {
+            const user = new User(u);
+            return user.save();
+        });
+
+        const savedUsers = await Promise.all(usersToSave);
+
+        const blogsToSave = initialBlogs.map((b, i) => {
             const entry = new Blog(b);
+            if (savedUsers[i]) {
+                entry.user = savedUsers[i]._id;
+            } else {
+                entry.user = savedUsers[savedUsers.length - 1]._id;
+            }
             return entry.save();
-        }));
+        });
+
+        await Promise.all(blogsToSave);
     });
 
     describe('GET', () => {
@@ -119,8 +135,7 @@ describe('Blogs API', () => {
         test('should default to 0 if likes number is not provided', async () => {
             const newBlogEntry = initialBlogs[0];
             delete newBlogEntry.likes;
-            const loggedInUserToken = (await api.post('/api/login').send(users[0])).response;
-            console.log(loggedInUserToken);
+            const loggedInUserToken = (await api.post('/api/login').send(users[1])).body.token;
             const response = await api
                 .post('/api/blogs')
                 .set('Authorization', `Bearer ${loggedInUserToken}`)

@@ -1,18 +1,29 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 
-const {users, usersInDB} = require('../utils/testhelpers/user_test_helper');
 const User = require('../models/user');
+const Blog = require('../models/blog');
 const app = require('../app');
+const {users, usersInDB} = require('../utils/testhelpers/user_test_helper');
+const {initialBlogs} = require('../utils/testhelpers/test_helpers');
 
 const api = supertest(app);
 
 describe('User Controller', () => {
     beforeEach(async () => {
         await User.deleteMany({});
+        await Blog.deleteMany({});
 
-        const usersToSave = users.map(u => {
+        const blogsToSave = initialBlogs.map((b) => {
+            const entry = new Blog(b);
+            return entry.save();
+        });
+
+        const savedBlogs = await Promise.all(blogsToSave);
+
+        const usersToSave = users.map((u, i) => {
             const user = new User(u);
+            user.blogs = user.blogs.concat(savedBlogs[i]._id);
             return user.save();
         });
 
@@ -26,11 +37,10 @@ describe('User Controller', () => {
                 .expect(200)
                 .expect('Content-Type', /application\/json/)).body;
 
-            const userWithBlogs = response.find((u) => u.username === 'user3');
             expect(response.length).toBe(users.length);
             expect(response[0].password).toBeUndefined();
             expect(response[0].id).toBeDefined();
-            expect(userWithBlogs.blogs[0].title).toBeDefined();
+            expect(response[0].blogs[0].title).toBeDefined();
         });
     });
 

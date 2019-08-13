@@ -15,7 +15,7 @@ test('dummy returns one', () => {
 describe('totalLikes', () => {
     test('when list has only one blog equals the likes of that', () => {
         const result = totalLikes(blogsList);
-        expect(result).toBe(36);
+        expect(result).toBe(15);
     });
 });
 
@@ -23,9 +23,9 @@ describe('favoriteBlog', function () {
     test('should return favorite blog', () => {
         const result = favoriteBlog(blogsList);
         expect(result).toEqual({
-            title: 'Canonical string reduction',
-            author: 'Edsger W. Dijkstra',
-            likes: 12,
+            title: 'React patterns',
+            author: 'Michael Chan',
+            likes: 7
         });
     });
 });
@@ -34,8 +34,8 @@ describe('mostBlogs', function () {
     test('should return author with the biggest number of blogs', () => {
         const result = mostBlogs(blogsList);
         expect(result).toEqual({
-            author: 'Robert C. Martin',
-            blogs: 3
+            author: 'Michael Chan',
+            blogs: 2
         });
     });
 });
@@ -44,8 +44,8 @@ describe('mostLikes', function () {
     test('should return author with the biggest number of likes', () => {
         const result = mostLikes(blogsList);
         expect(result).toEqual({
-            author: 'Edsger W. Dijkstra',
-            likes: 17
+            author: 'Michael Chan',
+            likes: 10
         });
     });
 });

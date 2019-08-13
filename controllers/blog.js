@@ -33,10 +33,12 @@ blogRouter.post('/', async (request, response, next) => {
         if (!userToken || !decodedToken.id) {
             return response.status(401).json({error: 'only authorized users allowed to create blogs, please login'});
         }
-        const result = await blog.save();
-        const user = await User.findOne(result.user);
-        user.blogs = [...user.blogs, result._id];
+        const user = await User.findById(decodedToken.id);
+        user.blogs = user.blogs.concat(blog._id);
         await user.save();
+
+        blog.user = user._id;
+        const result = await blog.save();
 
         const resultWithUser = await Blog.populate(result, { path: 'user' });
         return response.status(201).json(resultWithUser.toJSON());
