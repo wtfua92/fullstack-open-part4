@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const unique = require('mongoose-unique-validator');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -23,8 +23,10 @@ const userSchema = new mongoose.Schema({
     }]
 });
 
-userSchema.pre('save', { document: true }, function (next) {
-    this.password = bcrypt.hashSync(this.password, 10);
+userSchema.pre('save', { document: true }, async function (next) {
+    if (this.isModified('password')) next();
+    const salt = await bcrypt.genSalt(4);
+    this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
